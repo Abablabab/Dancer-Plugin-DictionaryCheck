@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME             => 'Dancer::Plugin::DictionaryCheck',
-    AUTHOR           => q{Ross Hayes <ross.hayes@gmail.com>},
+    AUTHOR           => q{Ross Hayes <ross@abablabab.co.uk>},
     VERSION_FROM     => 'lib/Dancer/Plugin/DictionaryCheck.pm',
     ABSTRACT_FROM    => 'lib/Dancer/Plugin/DictionaryCheck.pm',
     LICENSE          => 'Artistic_2_0',
@@ -18,8 +18,7 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        #'ABC'              => 1.6,
-        #'Foo::Bar::Module' => 5.0401,
+        'Dancer' => 1.175, 
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Dancer-Plugin-DictionaryCheck-*' },
