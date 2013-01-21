@@ -1,9 +1,8 @@
 Dancer-Plugin-DictionaryCheck
 
-A plugin that provides functionality to check a string (password) for dictionary
-words.
+This plugin allows a case insensitive search of a given dictionary for a given string.
 
-Defaults to the /usr/share/dict/web2 dictionary file. This behaviour can be
+Defaults to the /usr/share/dict/words dictionary file. This behaviour can be
 changed through the dictionary_load keyword.
 
 INSTALLATION
