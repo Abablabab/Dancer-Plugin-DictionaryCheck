@@ -15,39 +15,40 @@ Version 0.02
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
-Supplies Dancer functionality to check strings (passwords) for dictionary words.
+Allows a case insensive search of a given string against a given dictionary.
 
     use Dancer::Plugin::DictionaryCheck;
 
-    get '/good_password' => sub {  
-        return {
-            good_password => (! dictionary_check params->{password} )
-        };
-    }
+    get '/ok_for_scrabble' => sub {  
+        return dictionary_check(params->{word}) ? "yes" : "no";
+    };
 
-By default makes use /usr/share/dict/web2 which is present in standard debian
+    get '/change_dictionary' => sub {
+        return dictionary_load(params->{file}) ? "Loaded" : "Error";
+    };
+
+By default makes use /usr/share/dict/words which is present in standard debian
 images.
 
 =cut
 
 my %DICT;
 
-# Load a default dict when Dancer starts.
+# Load a default dictionary when Dancer starts.
 sub INIT {
-    # Supplied in debian installs by default. YMMV.
-    my $default_dict = '/usr/share/dict/web2';
-    if (! -e $default_dict ) {
-        warn <<NODICTFILE;
-Dictionary file not found. Please use dictionary_load to load one.
-NODICTFILE
-        return;
-    } 
+    my $default_dict = '/usr/share/dict/words';
+    
+    Dancer::Plugin::DictionaryCheck::_load_dict($default_dict)
+        or warning <<NODEFAULTDICT;
+The Default dictionary (/usr/share/dict/words) could not be loaded, 
+Please use dictionary_load to specify a dictionary to use before attempting to
+use dictionary_check.
+NODEFAULTDICT
 
-    Dancer::Plugin::DictionaryCheck::_load_dict($default_dict);
 };
 
 =head1 Dancer Keywords
@@ -67,9 +68,6 @@ register 'dictionary_load' => sub {
     shift if Scalar::Util::blessed($_[0]) && $_[0]->isa('Dancer::Core::DSL');
     my $dict_file = shift;
 
-    return 0 if (   ! -e $dict_file
-                 || ! -f _ );
-
     return _load_dict($dict_file);
 };
 
@@ -82,6 +80,11 @@ Returns 1 if present, 0 if it's not!  Simples!!
 =cut
 
 register 'dictionary_check' => sub {
+    # Check we have a dictionary with some content
+    if (!%Dancer::Plugin::DictionaryCheck::DICT) {
+        warning( "Dictionary is empty" );
+        return 0;
+    }
     return 0 if (!$_[0]);
     return exists $Dancer::Plugin::DictionaryCheck::DICT{ lc $_[0] };
 };
@@ -96,24 +99,32 @@ register_plugin( for_versions => [ qw( 1 2 ) ] );
 sub _load_dict {
     my $file = shift;
 
-    # Load the dict and bin the newlines.
+    if ( !$file || !-e $file || !-f _ ) {
+        warning( "Given file does not exist or is not a regular file." );
+        return 0;
+    }
+
     open my $dict_fh, '<', $file or do {
-        warn "Unable to load dictionary file.";
+        warning( "Unable to open dictionary file for reading." );
         return 0;
     };
+    
+    # Bin the old dictionary
+    %Dancer::Plugin::DictionaryCheck::DICT = ();
 
+    # Load the dictionary and bin the newlines.
     while (<$dict_fh>) {
         chomp; 
         $Dancer::Plugin::DictionaryCheck::DICT{ lc $_ } = 1;
     }
+    close $dict_fh;
 
-    # Check we actually loaded something to check against, too. 
-    return (%Dancer::Plugin::DictionaryCheck::DICT) ? 1 : 0;
+    return 1;
 }
 
 =head1 AUTHOR
 
-Ross Hayes, C<< <ross.hayes at gmail.com> >>
+Ross Hayes, C<< <ross at abablabab.co.uk> >>
 
 =head1 BUGS
 
