@@ -11,7 +11,7 @@ Dancer::Plugin::DictionaryCheck
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
@@ -24,11 +24,11 @@ Allows a case insensive search of a given string against a given dictionary.
     use Dancer::Plugin::DictionaryCheck;
 
     get '/ok_for_scrabble' => sub {  
-        return dictionary_check(params->{word}) ? "yes" : "no";
+        return dictionary_check( params->{word} ) ? "yes" : "no";
     };
 
     get '/change_dictionary' => sub {
-        return dictionary_load(params->{file}) ? "Loaded" : "Error";
+        return dictionary_load( params->{file} ) ? "Loaded" : "Error";
     };
 
 By default makes use /usr/share/dict/words which is present in standard debian
